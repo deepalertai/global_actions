@@ -1,0 +1,15 @@
+name: 'Build and Push Docker Image'
+description: 'Builds and pushes a Docker image to the registry'
+runs:
+  using: "composite"
+  steps:
+    - name: Build Docker Image
+      shell: bash
+      run: |
+        docker build --network=host --pull -t "${{ env.REGISTRY }}/${{ GITHUB_REPOSITORY }}:${{ GITHUB_SHA }} " -f .infra/Dockerfile --build-arg BRANCH="${{ GITHUB_REF }}" .
+
+    - name: Push Docker Image
+      shell: bash
+      run: |
+        docker push "${{ env.REGISTRY }}/${{ GITHUB_REPOSITORY }}:${{ GITHUB_SHA }} "
+        docker push "${{ env.REGISTRY }}/${{ GITHUB_REPOSITORY }}:${{ GITHUB_REF }} "
