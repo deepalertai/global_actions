@@ -25,18 +25,13 @@ jobs:
         with:
             credentials_json: ${{ secrets.GCP_KEY }}
 
-      - name: Get repository name
-        shell: bash
-        run: |
-          REPO=$(echo "${{ inputs.repository }}" | cut -d'/' -f2)
-
       - name: Build Docker Image
         shell: bash
         run: |
-          docker build --network=host --pull -t "${{ env.REGISTRY }}/${{ env.REPO }}:${{ inputs.sha }} " -f .infra/Dockerfile --build-arg BRANCH="${{ inputs.branch }}" .
+          docker build --network=host --pull -t "${{ vars.REGISTRY }}/${{ inputs.repository }}:${{ inputs.sha }}" -f .infra/Dockerfile --build-arg BRANCH="${{ inputs.branch }}" .
 
       - name: Push Docker Image
         shell: bash
         run: |
-          docker push "${{ env.REGISTRY }}/${{ env.REPO }}:${{ inputs.sha }} "
-          docker push "${{ env.REGISTRY }}/${{ env.REPO }}:${{ inputs.branch }} "
+          docker push "${{ vars.REGISTRY }}/${{ inputs.repository }}:${{ inputs.sha }}"
+          docker push "${{ vars.REGISTRY }}/${{ inputs.repository }}:${{ inputs.branch }}"
