@@ -1,9 +1,6 @@
 on:
   workflow_call:
     inputs:
-      kubeconfig:
-        required: true
-        type: string
       branch:
         required: true
         type: string
@@ -25,11 +22,12 @@ jobs:
           echo "DEPLOYMENT_NAME=$DEPLOYMENT_NAME" >> $GITHUB_ENV
           NS_PREFIX=${{ inputs.namespace_prefix }}
           PREFIX=${NS_PREFIX:-"deepalert"}
+          echo "PREFIX=$PREFIX" >> $GITHUB_ENV
 
       - name: Decode and configure kubectl
         shell: bash
         run: |
-          echo "${{ inputs.kubeconfig }}" | base64 -d > kubeconfig.yaml
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig.yaml
           export KUBECONFIG=$(pwd)/kubeconfig.yaml
 
       - name: Restart Kubernetes deployment
