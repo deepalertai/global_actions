@@ -4,6 +4,7 @@ runs:
   using: "composite"
   steps:
     - name: Get repository name
+      shell: bash
       run: |
         REPO=$(echo "${{ GITHUB_REPOSITORY }}" | cut -d'/' -f2)
 
