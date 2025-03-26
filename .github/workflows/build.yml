@@ -20,6 +20,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Debug GCP_KEY
+        run: |
+          KEY_START=$(echo "${{ secrets.GCP_KEY }}" | head -c 20)
+          echo "Key: $KEY_START"
+
       - name: Authenticate GCP
         uses: google-github-actions/auth@v2
         with:
