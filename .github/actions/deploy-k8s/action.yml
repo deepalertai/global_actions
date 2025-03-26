@@ -4,15 +4,19 @@ inputs:
   kubeconfig:
     description: 'Base64 encoded Kubernetes configuration'
     required: true
+  namespace_prefix:
+    description: 'Kubernetes namespace prefix'
 runs:
   using: "composite"
   steps:
-    - name: Set deployment name based on repository name
+    - name: Configure env variables
       shell: bash
       run: |
         REPO_NAME="${{ github.repository }}"
         DEPLOYMENT_NAME=$(echo "$REPO_NAME" | sed 's/.*\///' | tr '_' '-')
         echo "DEPLOYMENT_NAME=$DEPLOYMENT_NAME" >> $GITHUB_ENV
+        NS_PREFIX=${{ inputs.namespace_prefix }}
+        PREFIX=${NS_PREFIX:-"deepalert"}
 
     - name: Decode and configure kubectl
       shell: bash
@@ -23,4 +27,4 @@ runs:
     - name: Restart Kubernetes deployment
       shell: bash
       run: |
-        kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }}  -n deepalert-${{ GITHUB_REF }}
+        kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }}  -n ${{ env.PREFIX }}-${{ GITHUB_REF }}
