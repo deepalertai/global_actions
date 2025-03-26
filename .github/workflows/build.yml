@@ -8,10 +8,15 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/pre-commit
+      - uses: actions/checkout@v3  # Checkout the caller repository
+      - uses: actions/checkout@v3  # Checkout the global_actions repository
+        with:
+          repository: deepalertai/global_actions
+          path: global_actions
       - name: Authenticate GCP
         uses: google-github-actions/auth@v0.6.0
         with:
             credentials_json: ${{ secrets.GCP_KEY }}
-      - uses: ./.github/actions/build-docker
+
+      - uses: ./global_actions/.github/actions/pre-commit
+      - uses: ./global_actions/.github/actions/build-docker
