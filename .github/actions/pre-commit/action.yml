@@ -11,7 +11,7 @@ runs:
 
     - name: Install pre-commit
       shell: bash
-      run: pip install pre-commit
+      run: pip install pre-commit -q --root-user-action=ignore
 
     - name: pre-commit autoupdate
       shell: bash
@@ -37,5 +37,6 @@ runs:
         git add -A .
         git diff --cached --exit-code && echo "No changes to commit" || {
           git commit -m "Someone didn't pre-commit - running formatting"
-          git push origin HEAD:${{ github.ref_name }}
+          echo "Stopping workflow due to unformatted changes."
+          exit 1
         }
