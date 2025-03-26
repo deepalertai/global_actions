@@ -1,0 +1,35 @@
+on:
+  workflow_call:
+    inputs:
+      kubeconfig:
+        required: true
+        type: string
+      namespace_prefix:
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    permissions:
+        contents: write
+
+    steps:
+      - name: Configure env variables
+        shell: bash
+        run: |
+          REPO_NAME="${{ github.repository }}"
+          DEPLOYMENT_NAME=$(echo "$REPO_NAME" | sed 's/.*\///' | tr '_' '-')
+          echo "DEPLOYMENT_NAME=$DEPLOYMENT_NAME" >> $GITHUB_ENV
+          NS_PREFIX=${{ inputs.namespace_prefix }}
+          PREFIX=${NS_PREFIX:-"deepalert"}
+
+      - name: Decode and configure kubectl
+        shell: bash
+        run: |
+          echo "${{ inputs.kubeconfig }}" | base64 -d > kubeconfig.yaml
+          export KUBECONFIG=$(pwd)/kubeconfig.yaml
+
+      - name: Restart Kubernetes deployment
+        shell: bash
+        run: |
+          kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }}  -n ${{ env.PREFIX }}-${{ GITHUB_REF }}

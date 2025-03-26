@@ -1,0 +1,58 @@
+on:
+  workflow_call:
+
+jobs:
+  precommit:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install pre-commit
+        shell: bash
+        run: pip install pre-commit -q --root-user-action=ignore
+
+      - name: pre-commit autoupdate
+        shell: bash
+        run: pre-commit autoupdate
+
+      - name: Set up Git
+        shell: bash
+        run: |
+          git config --global user.email "github-actions@deepalert.ai"
+          git config --global user.name "GitHub Actions"
+
+      - name: Run Pre-Commit Hooks
+        shell: bash
+        run: |
+          for i in {1..5}; do pre-commit run --all-files && break || echo "Attempt $i failed... retrying."; done
+
+      - name: Check for Changes
+        id: changes
+        shell: bash
+        run: |
+          git add -A .
+          if git diff --cached --quiet; then
+              echo "no_changes=true" >> "$GITHUB_OUTPUT"
+          else
+              echo "no_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit Changes
+        if: steps.changes.outputs.no_changes == 'false'
+        shell: bash
+        run: |
+          git commit -m "Someone didn't pre-commit - running formatting"
+          git push
+
+      - name: Fail if Changes Detected
+        shell: bash
+        if: steps.changes.outputs.no_changes == 'false'
+        run: exit 1
