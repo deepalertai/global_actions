@@ -24,13 +24,16 @@ jobs:
 
       - name: Debug GCP_KEY
         run: |
-          KEY_START=$(echo "${{ secrets.GCP_KEY }}" | head -c 20)
+          KEY_START=$(echo "${{ secrets.GCP_KEY }}" | head -c 50)
           echo "Key: $KEY_START"
 
       - name: Authenticate GCP
-        uses: google-github-actions/auth@v2
+        uses: 'google-github-actions/auth@v2'
         with:
-          credentials_json: ${{ secrets.GCP_KEY }}
+          credentials_json: '${{ secrets.GCP_KEY }}'
+
+      - name: Set GCP Project
+        run: gcloud config set project production-449909
 
       - name: Verify gcloud Account
         run: gcloud auth list
