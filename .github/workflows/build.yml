@@ -10,9 +10,7 @@ on:
       sha:
         required: true
         type: string
-    secrets:
-      GCP_KEY:
-        required: true
+
 jobs:
   build:
     runs-on: ubuntu-22.04
