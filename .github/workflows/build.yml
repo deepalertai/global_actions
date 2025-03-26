@@ -28,12 +28,13 @@ jobs:
       - name: Docker Auth
         shell: bash
         run: |
-          gcloud auth configure-docker
+          gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
 
       - name: Build Docker Image
         shell: bash
         run: |
           docker build --network=host --pull -t "${{ vars.REGISTRY }}/${{ inputs.repository }}:${{ inputs.sha }}" -f .infra/Dockerfile --build-arg BRANCH="${{ inputs.branch }}" .
+          docker tag "${{ vars.REGISTRY }}/${{ inputs.repository }}:${{ inputs.sha }}" "${{ vars.REGISTRY }}/${{ inputs.repository }}:${{ inputs.branch }}"
 
       - name: Push Docker Image
         shell: bash
