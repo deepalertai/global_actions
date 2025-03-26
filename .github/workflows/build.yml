@@ -8,11 +8,16 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v3  # Checkout the caller repository
-      - uses: actions/checkout@v3  # Checkout the global_actions repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Checkout global actions repository
+        uses: actions/checkout@v4
         with:
           repository: deepalertai/global_actions
           path: global_actions
+          fetch-depth: 0
       - name: Authenticate GCP
         uses: google-github-actions/auth@v0.6.0
         with:

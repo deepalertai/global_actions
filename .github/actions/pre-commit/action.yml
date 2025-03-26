@@ -20,9 +20,6 @@ runs:
     - name: Set up Git
       shell: bash
       run: |
-        git fetch
-        git reset --hard origin/${{ github.ref_name }}
-        git pull origin ${{ github.ref_name }}
         git config --global user.email "github-actions@deepalert.ai"
         git config --global user.name "GitHub Actions"
 
@@ -31,12 +28,25 @@ runs:
       run: |
         for i in {1..5}; do pre-commit run --all-files && break || echo "Attempt $i failed... retrying."; done
 
-    - name: Commit and Push Changes
+    - name: Check for Changes
+      id: changes
       shell: bash
       run: |
         git add -A .
-        git diff --cached --exit-code && echo "No changes to commit" || {
-          git commit -m "Someone didn't pre-commit - running formatting"
-          echo "Stopping workflow due to unformatted changes."
-          exit 1
-        }
+        if git diff --cached --quiet; then
+          echo "no_changes=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "no_changes=false" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Commit Changes
+      if: steps.changes.outputs.no_changes == 'false'
+      shell: bash
+      run: |
+        git commit -m "Someone didn't pre-commit - running formatting"
+        git push
+
+    - name: Fail if Changes Detected
+      shell: bash
+      if: steps.changes.outputs.no_changes == 'false'
+      run: exit 1
