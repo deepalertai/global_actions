@@ -4,6 +4,9 @@ on:
       kubeconfig:
         required: true
         type: string
+      branch:
+        required: true
+        type: string
       namespace_prefix:
         type: string
 
@@ -32,4 +35,4 @@ jobs:
       - name: Restart Kubernetes deployment
         shell: bash
         run: |
-          kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }}  -n ${{ env.PREFIX }}-${{ GITHUB_REF }}
+          kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }}  -n ${{ env.PREFIX }}-${{ inputs.branch }}
