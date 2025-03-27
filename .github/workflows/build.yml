@@ -1,18 +1,8 @@
 on:
   workflow_call:
-    inputs:
-      repository:
-        required: true
-        type: string
-      branch:
-        required: true
-        type: string
-      sha:
-        required: true
-        type: string
     secrets:
-      inherit:
-
+      gcp_provider:
+        required: true
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -23,26 +13,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Debug GH values
-        run: |
-          echo "${{ github.event.repository.name }}"
-          echo "${{ secrets.GCP_PROVIDER }}"
-          echo "${{ vars.GCP_PROVIDER }}"
-
       - name: Authenticate GCP
         uses: 'google-github-actions/auth@v2'
         with:
-          workload_identity_provider: '${{ secrets.GCP_PROVIDER }}'
+          workload_identity_provider: '${{ secrets.gcp_provider }}'
           project_id: '${{ vars.PROD_PROJECT_ID}}'
 
       - name: Build Docker Image
         shell: bash
         run: |
-          docker build --network=host --pull -t "${{ vars.REGISTRY }}/${{ inputs.repository }}:${{ inputs.sha }}" -f .infra/Dockerfile --build-arg BRANCH="${{ inputs.branch }}" .
-          docker tag "${{ vars.REGISTRY }}/${{ inputs.repository }}:${{ inputs.sha }}" "${{ vars.REGISTRY }}/${{ inputs.repository }}:${{ inputs.branch }}"
+          docker build --network=host --pull -t "${{ vars.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" -f .infra/Dockerfile --build-arg BRANCH="${{ github.ref_name }}" .
+          docker tag "${{ vars.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" "${{ vars.REGISTRY }}/${{ github.event.repository.name }}:${{ github.ref_name }}"
 
       - name: Push Docker Image
         shell: bash
         run: |
-          docker push "${{ vars.REGISTRY }}/${{ inputs.repository }}:${{ inputs.sha }}"
-          docker push "${{ vars.REGISTRY }}/${{ inputs.repository }}:${{ inputs.branch }}"
+          docker push "${{ vars.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}"
+          docker push "${{ vars.REGISTRY }}/${{ github.event.repository.name }}:${{ github.ref_name }}"
