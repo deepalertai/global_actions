@@ -3,6 +3,12 @@ on:
     secrets:
       gcp_provider:
         required: true
+  push:
+    branches:
+      - main
+      - staging
+      - preprod
+
 jobs:
   build:
     runs-on: ubuntu-22.04
