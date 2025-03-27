@@ -19,6 +19,9 @@ jobs:
           workload_identity_provider: '${{ secrets.gcp_provider }}'
           project_id: '${{ vars.PROD_PROJECT_ID}}'
 
+      - name: Configure Docker Authentication
+        run: gcloud auth configure-docker europe-west1-docker.pkg.dev
+
       - name: Build Docker Image
         shell: bash
         run: |
