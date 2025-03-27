@@ -25,6 +25,21 @@ jobs:
           PREFIX=${{ inputs.namespace_prefix || 'deepalert' }}
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
 
+      - name: Debug KUBE_TOKEN
+        run: |
+          if [ -z "${{ secrets.kube_token }}" ]; then
+            echo "kube_token is empty or not set!"
+            exit 1
+          else
+            echo "kube_token is set."
+          fi
+          if [ -z "${{ secrets.kube_server }}" ]; then
+            echo "kube_server is empty or not set!"
+            exit 1
+          else
+            echo "kube_server is set."
+          fi
+
       - name: Configure kubectl authentication
         shell: bash
         run: |
