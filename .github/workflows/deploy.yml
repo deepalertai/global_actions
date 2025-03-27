@@ -1,11 +1,11 @@
 on:
   workflow_call:
     inputs:
-      branch:
-        required: true
-        type: string
       namespace_prefix:
         type: string
+    secrets:
+      kubeconfig:
+        required: true
 
 jobs:
   deploy:
@@ -17,7 +17,7 @@ jobs:
       - name: Configure env variables
         shell: bash
         run: |
-          REPO_NAME="${{ github.repository }}"
+          REPO_NAME="${{ github.event.repository.name }}"
           DEPLOYMENT_NAME=$(echo "$REPO_NAME" | sed 's/.*\///' | tr '_' '-')
           echo "DEPLOYMENT_NAME=$DEPLOYMENT_NAME" >> $GITHUB_ENV
           NS_PREFIX=${{ inputs.namespace_prefix }}
@@ -27,10 +27,10 @@ jobs:
       - name: Decode and configure kubectl
         shell: bash
         run: |
-          echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig.yaml
+          echo "${{ secrets.kubeconfig }}" | base64 -d > kubeconfig.yaml
           export KUBECONFIG=$(pwd)/kubeconfig.yaml
 
       - name: Restart Kubernetes deployment
         shell: bash
         run: |
-          kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }}  -n ${{ env.PREFIX }}-${{ inputs.branch }}
+          kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }}  -n ${{ env.PREFIX }}-${{ github.ref_name }}
