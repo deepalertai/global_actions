@@ -3,11 +3,6 @@ on:
     secrets:
       gcp_provider:
         required: true
-  push:
-    branches:
-      - main
-      - staging
-      - preprod
 
 jobs:
   build:

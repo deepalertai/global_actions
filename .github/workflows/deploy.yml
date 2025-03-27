@@ -10,10 +10,6 @@ on:
         required: true
       kube_server:
         required: true
-  push:
-    branches:
-      - staging
-      - preprod
 
 jobs:
   deploy:
