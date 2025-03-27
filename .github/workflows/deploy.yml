@@ -25,39 +25,20 @@ jobs:
           PREFIX=${{ inputs.namespace_prefix || 'deepalert' }}
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
 
-      - name: Debug KUBE_TOKEN
-        run: |
-          if [ -z "${{ secrets.kube_token }}" ]; then
-            echo "kube_token is empty or not set!"
-            exit 1
-          else
-            echo "kube_token is set."
-          fi
-          if [ -z "${{ secrets.kube_server }}" ]; then
-            echo "kube_server is empty or not set!"
-            exit 1
-          else
-            echo "kube_server is set."
-          fi
-
       - name: Configure kubectl authentication
         shell: bash
         run: |
           kubectl config set-cluster github-actions \
             --server=${{ secrets.kube_server }} \
             --insecure-skip-tls-verify=true
-
           kubectl config set-credentials github-actions \
-            --token=${{ secrets.kube_token }}_${{ github.ref_name }}
-
+            --token=${{ secrets.kube_token }}
           kubectl config set-context github-actions \
             --cluster=github-actions \
             --user=github-actions \
-            --namespace=${{ env.PREFIX }}-${{ github.ref_name }}
 
           kubectl config use-context github-actions
-
-          kubectl cluster-info
+          kubectl auth can-i get deployments -n ${{ env.PREFIX }}-${{ github.ref_name }}
 
       # - name: Restart Kubernetes deployment
       #   shell: bash
