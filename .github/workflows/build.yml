@@ -11,8 +11,8 @@ on:
         required: true
         type: string
     secrets:
-      gcp_provider:
-        required: true
+      inherit:
+
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -26,11 +26,13 @@ jobs:
       - name: Debug GH values
         run: |
           echo "${{ github.event.repository.name }}"
+          echo "${{ secrets.GCP_PROVIDER }}"
+          echo "${{ vars.GCP_PROVIDER }}"
 
       - name: Authenticate GCP
         uses: 'google-github-actions/auth@v2'
         with:
-          workload_identity_provider: '${{ secrets.gcp_provider }}'
+          workload_identity_provider: '${{ secrets.GCP_PROVIDER }}'
           project_id: '${{ vars.PROD_PROJECT_ID}}'
 
       - name: Build Docker Image
