@@ -3,6 +3,8 @@ on:
     inputs:
       namespace_prefix:
         type: string
+      deployment:
+        type: string
     secrets:
       kube_token:
         required: true
@@ -19,9 +21,11 @@ jobs:
       - name: Configure env variables
         shell: bash
         run: |
-          REPO_NAME="${{ github.event.repository.name }}"
-          DEPLOYMENT_NAME=$(echo "$REPO_NAME" | sed 's/.*\///' | tr '_' '-')
+          # use repo name or provided deployment name
+          DEFAULT_DEPLOYMENT=$(basename "${{ github.event.repository.name }}" | tr '_' '-')
+          DEPLOYMENT_NAME="${ ${{ inputs.deployment }}:-$DEFAULT_DEPLOYMENT}"
           echo "DEPLOYMENT_NAME=$DEPLOYMENT_NAME" >> $GITHUB_ENV
+
           PREFIX=${{ inputs.namespace_prefix || 'deepalert' }}
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
 
@@ -40,7 +44,7 @@ jobs:
           kubectl config use-context github-actions
           kubectl auth can-i get deployments -n ${{ env.PREFIX }}-${{ github.ref_name }}
 
-      # - name: Restart Kubernetes deployment
-      #   shell: bash
-      #   run: |
-      #     kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }}  -n ${{ env.PREFIX }}-${{ github.ref_name }}
+      - name: Restart Kubernetes deployment
+        shell: bash
+        run: |
+          kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }}  -n ${{ env.PREFIX }}-${{ github.ref_name }}
