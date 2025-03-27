@@ -10,8 +10,6 @@ on:
       sha:
         required: true
         type: string
-      project_id:
-        type: string
     secrets:
       gcp_provider:
         required: true
@@ -25,19 +23,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Debug GCP_KEY
+      - name: Debug GH values
         run: |
-          KEY_START=$(echo "${{ secrets.gcp_provider }}" | head -c 10)
-          echo "Key: $KEY_START"
+          echo "${{ github.event.repository.name }}"
 
       - name: Authenticate GCP
         uses: 'google-github-actions/auth@v2'
         with:
           workload_identity_provider: '${{ secrets.gcp_provider }}'
-          project_id: '${{ inputs.project_id}}'
-
-      - name: Configure Docker Authentication
-        run: gcloud auth configure-docker europe-west1-docker.pkg.dev
+          project_id: '${{ vars.PROD_PROJECT_ID}}'
 
       - name: Build Docker Image
         shell: bash
