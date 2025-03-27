@@ -27,7 +27,8 @@ jobs:
         run: |
           # use repo name or provided deployment name
           DEFAULT_DEPLOYMENT=$(basename "${{ github.event.repository.name }}" | tr '_' '-')
-          DEPLOYMENT_NAME="${ ${{ inputs.deployment }}:-$DEFAULT_DEPLOYMENT}"
+          echo "DEFAULT_DEPLOYMENT=$DEFAULT_DEPLOYMENT" >> $GITHUB_ENV
+          DEPLOYMENT_NAME="${{ inputs.deployment || env.DEFAULT_DEPLOYMENT }}"
           echo "DEPLOYMENT_NAME=$DEPLOYMENT_NAME" >> $GITHUB_ENV
 
           PREFIX=${{ inputs.namespace_prefix || 'deepalert' }}
