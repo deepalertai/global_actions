@@ -33,7 +33,7 @@ jobs:
       - name: Build Docker Image
         shell: bash
         run: |
-          docker build --network=host --pull -t "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" -f .infra/Dockerfile --build-arg BRANCH="${{ github.ref_name }}" REGISTRY="${{ env.REGISTRY }}" .
+          docker build --network=host --pull -t "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" -f .infra/Dockerfile --build-arg BRANCH="${{ github.ref_name }}" --build-arg REGISTRY="${{ env.REGISTRY }}" .
           docker tag "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.ref_name }}"
 
       - name: Push Docker Image
