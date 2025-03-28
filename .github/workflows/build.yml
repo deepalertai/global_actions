@@ -1,5 +1,9 @@
 on:
   workflow_call:
+    inputs:
+      project_id:
+        required: true
+        type: string
     secrets:
       gcp_provider:
         required: true
@@ -13,12 +17,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Get registry
+        run: |
+          echo "REGISTRY=${{ vars.REGION }}-docker.pkg.dev/${{ inputs.project_id }}/${{ github.ref_name }}/${{ github.event.repository.name }}" >> $GITHUB_ENV
 
       - name: Authenticate GCP
         uses: 'google-github-actions/auth@v2'
         with:
           workload_identity_provider: '${{ secrets.gcp_provider }}'
-          project_id: '${{ vars.PROD_PROJECT_ID}}'
+          project_id: '${{ inputs.project_id}}'
 
       - name: Configure Docker Authentication
         run: gcloud auth configure-docker europe-west1-docker.pkg.dev
@@ -26,11 +33,11 @@ jobs:
       - name: Build Docker Image
         shell: bash
         run: |
-          docker build --network=host --pull -t "${{ vars.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" -f .infra/Dockerfile --build-arg BRANCH="${{ github.ref_name }}" .
-          docker tag "${{ vars.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" "${{ vars.REGISTRY }}/${{ github.event.repository.name }}:${{ github.ref_name }}"
+          docker build --network=host --pull -t "${{ env.REGISTRY }}:${{ github.sha }}" -f .infra/Dockerfile --build-arg BRANCH="${{ github.ref_name }}" .
+          docker tag "${{ env.REGISTRY }}:${{ github.sha }}" "${{ env.REGISTRY }}:${{ github.ref_name }}"
 
       - name: Push Docker Image
         shell: bash
         run: |
-          docker push "${{ vars.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}"
-          docker push "${{ vars.REGISTRY }}/${{ github.event.repository.name }}:${{ github.ref_name }}"
+          docker push "${{ env.REGISTRY }}:${{ github.sha }}"
+          docker push "${{ env.REGISTRY }}:${{ github.ref_name }}"
