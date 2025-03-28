@@ -45,7 +45,11 @@ jobs:
           kubectl config use-context github-actions
           kubectl auth can-i get deployments -n ${{ env.PREFIX }}-${{ github.ref_name }}
 
-      - name: Restart Kubernetes deployment
-        shell: bash
-        run: |
-          kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }}  -n ${{ env.PREFIX }}-${{ github.ref_name }}
+      - name: "TODO: enable deployments"
+        run: exit 1
+        continue-on-error: true
+
+      # - name: Restart Kubernetes deployment
+      #   shell: bash
+      #   run: |
+      #     kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }}  -n ${{ env.PREFIX }}-${{ github.ref_name }}
