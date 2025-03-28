@@ -60,4 +60,8 @@ jobs:
               repo: context.repo.repo,
               event_type: 'publish-trigger',
             });
-            process.exit(1);
+
+      - name: Exit
+        shell: bash
+        if: steps.changes.outputs.no_changes == 'false'
+        run: exit 1
