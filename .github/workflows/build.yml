@@ -30,14 +30,23 @@ jobs:
       - name: Configure Docker Authentication
         run: gcloud auth configure-docker ${{ vars.REGION }}-docker.pkg.dev
 
-      - name: Build Docker Image
-        shell: bash
-        run: |
-          docker build --network=host --pull -t "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" -f .infra/Dockerfile --build-arg BRANCH="${{ github.ref_name }}" --build-arg REGISTRY="${{ env.REGISTRY }}" .
-          docker tag "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.ref_name }}"
 
-      - name: Push Docker Image
-        shell: bash
+      - name: "TODO: enable builds"
         run: |
-          docker push "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}"
-          docker push "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.ref_name }}"
+          if [[ "${{ github.ref_name }}" == "dev" ]]; then
+            echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
+          else
+            echo "DEPLOY_ENV=${{ github.ref_name }}" >> $GITHUB_ENV
+          fi
+
+      # - name: Build Docker Image
+      #   shell: bash
+      #   run: |
+      #     docker build --network=host --pull -t "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" -f .infra/Dockerfile --build-arg BRANCH="${{ github.ref_name }}" --build-arg REGISTRY="${{ env.REGISTRY }}" .
+      #     docker tag "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.ref_name }}"
+
+      # - name: Push Docker Image
+      #   shell: bash
+      #   run: |
+      #     docker push "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}"
+      #     docker push "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.ref_name }}"
