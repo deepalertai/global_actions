@@ -1,5 +1,11 @@
 on:
   workflow_call:
+  workflow_run:
+    workflows: ["Pre-Commit Workflow"]
+    types:
+      - completed
+    conclusions:
+      - failure  # Only trigger if the previous workflow failed
 
 jobs:
   precommit:
@@ -52,7 +58,14 @@ jobs:
           git commit -m "Someone didn't pre-commit - running formatting"
           git push
 
-      - name: Fail if Changes Detected
-        shell: bash
+      - name: Restart Workflow
         if: steps.changes.outputs.no_changes == 'false'
-        run: exit 1
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.repos.createDispatchEvent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              event_type: 'publish-trigger',
+            });
+            process.exit(1);
