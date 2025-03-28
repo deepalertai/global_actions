@@ -33,10 +33,9 @@ jobs:
       - name: Debug provider
         run: |
           SECRET="${{ secrets.gcp_provider }}"
-          echo MASKED_SECRET="******${SECRET: -10}"
+          echo MASKED_SECRET="******${SECRET: -80}"
           echo $MASKED_SECRET
-          echo ${{ secrets.gcp_provider }} | gcloud auth activate-service-account --key-file=-
-          gcloud auth list
+          gcloud info
 
       - name: Build Docker Image
         shell: bash
