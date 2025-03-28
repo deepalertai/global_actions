@@ -58,7 +58,7 @@ jobs:
             github.rest.repos.createDispatchEvent({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              event_type: 'publish-trigger',
+              event_type: 'restart-trigger',
             });
 
       - name: Exit
