@@ -30,13 +30,6 @@ jobs:
       - name: Configure Docker Authentication
         run: gcloud auth configure-docker ${{ vars.REGION }}-docker.pkg.dev
 
-      - name: Debug provider
-        run: |
-          SECRET="${{ secrets.gcp_provider }}"
-          echo MASKED_SECRET="******${SECRET: -80}"
-          echo $MASKED_SECRET
-          gcloud info
-
       - name: Build Docker Image
         shell: bash
         run: |
