@@ -30,6 +30,14 @@ jobs:
           PREFIX=${{ inputs.namespace_prefix || 'deepalert' }}
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
 
+      - name: "TODO: enable deployments"
+        run: |
+          if [[ "${{ github.ref_name }}" == "dev" ]]; then
+            echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
+          else
+            echo "DEPLOY_ENV=${{ github.ref_name }}" >> $GITHUB_ENV
+          fi
+
       - name: Configure kubectl authentication
         shell: bash
         run: |
@@ -43,11 +51,7 @@ jobs:
             --user=github-actions \
 
           kubectl config use-context github-actions
-          kubectl auth can-i get deployments -n ${{ env.PREFIX }}-${{ github.ref_name }}
-
-      - name: "TODO: enable deployments"
-        run: exit 1
-        continue-on-error: true
+          kubectl auth can-i get deployments -n ${{ env.PREFIX }}-${{ env.DEPLOY_ENV }}
 
       # - name: Restart Kubernetes deployment
       #   shell: bash
