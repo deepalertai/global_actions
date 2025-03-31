@@ -50,18 +50,50 @@ jobs:
           git commit -m "Someone didn't pre-commit - running formatting"
           git push
 
-      # - name: Restart Workflow
-      #   if: steps.changes.outputs.no_changes == 'false'
-      #   uses: actions/github-script@v7
-      #   with:
-      #     script: |
-      #       github.rest.repos.createDispatchEvent({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         event_type: 'restart-trigger',
-      #       });
+      - name: Check for Restart Flag
+        if: steps.changes.outputs.no_changes == 'false'
+        id: check-restart
+        run: |
+          if gh run download --name restart-flag 2>/dev/null; then
+            echo "Workflow has already restarted. Skipping restart."
+            exit 0
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restart Workflow
+        if: steps.changes.outputs.no_changes == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.repos.createDispatchEvent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              event_type: 'restart-trigger',
+            });
+
+      - name: Set Restart Flag
+        if: steps.changes.outputs.no_changes == 'false'
+        run: echo "restart-done" > restart-flag.txt
+
+      - name: Upload Restart Flag
+        if: steps.changes.outputs.no_changes == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: restart-flag
+          path: restart-flag.txt
 
       - name: Exit
         shell: bash
         if: steps.changes.outputs.no_changes == 'false'
         run: exit 1
+
+  cleanup:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Remove Restart Flag
+        continue-on-error: true
+        run: gh run delete-artifact restart-flag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
