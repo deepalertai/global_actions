@@ -30,15 +30,6 @@ jobs:
       - name: Configure Docker Authentication
         run: gcloud auth configure-docker ${{ vars.REGION }}-docker.pkg.dev
 
-
-      - name: "TODO: enable builds"
-        run: |
-          if [[ "${{ github.ref_name }}" == "dev" ]]; then
-            echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
-          else
-            echo "DEPLOY_ENV=${{ github.ref_name }}" >> $GITHUB_ENV
-          fi
-
       - name: Build Docker Image
         shell: bash
         run: |
