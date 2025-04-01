@@ -21,23 +21,23 @@ jobs:
         run: |
           echo "REGISTRY=${{ vars.REGION }}-docker.pkg.dev/${{ inputs.project_id }}/${{ github.ref_name }}" >> $GITHUB_ENV
 
-      - name: Authenticate GCP
-        uses: 'google-github-actions/auth@v2'
-        with:
-          workload_identity_provider: '${{ secrets.gcp_provider }}'
-          project_id: '${{ inputs.project_id}}'
+      # - name: Authenticate GCP
+      #   uses: 'google-github-actions/auth@v2'
+      #   with:
+      #     workload_identity_provider: '${{ secrets.gcp_provider }}'
+      #     project_id: '${{ inputs.project_id}}'
 
-      - name: Configure Docker Authentication
-        run: gcloud auth configure-docker ${{ vars.REGION }}-docker.pkg.dev
+      # - name: Configure Docker Authentication
+      #   run: gcloud auth configure-docker ${{ vars.REGION }}-docker.pkg.dev
 
-      - name: Build Docker Image
-        shell: bash
-        run: |
-          docker build --network=host --pull -t "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" -f .infra/Dockerfile --build-arg BRANCH="${{ github.ref_name }}" --build-arg REGISTRY="${{ env.REGISTRY }}" .
-          docker tag "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.ref_name }}"
+      # - name: Build Docker Image
+      #   shell: bash
+      #   run: |
+      #     docker build --network=host --pull -t "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" -f .infra/Dockerfile --build-arg BRANCH="${{ github.ref_name }}" --build-arg REGISTRY="${{ env.REGISTRY }}" .
+      #     docker tag "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.ref_name }}"
 
-      - name: Push Docker Image
-        shell: bash
-        run: |
-          docker push "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}"
-          docker push "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.ref_name }}"
+      # - name: Push Docker Image
+      #   shell: bash
+      #   run: |
+      #     docker push "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}"
+      #     docker push "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.ref_name }}"
