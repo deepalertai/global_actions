@@ -3,7 +3,7 @@ on:
 
 jobs:
   precommit:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest-m
     permissions:
       contents: write
 
