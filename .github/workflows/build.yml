@@ -4,11 +4,11 @@ on:
       project_id:
         required: true
         type: string
-      args:
-        type: string
     secrets:
       gcp_provider:
         required: true
+      args:
+        required: false
 
 jobs:
   build:
