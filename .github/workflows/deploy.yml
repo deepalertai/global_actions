@@ -21,8 +21,8 @@ jobs:
       - name: Configure env variables
         shell: bash
         run: |
-          # use repo name or provided deployment name
-          DEFAULT_DEPLOYMENT=$(basename "${{ github.event.repository.name }}" | tr '_' '-')
+          # use formatted repo name or provided deployment name
+          DEFAULT_DEPLOYMENT=$(basename "${{ github.event.repository.name }}" | tr -d '0-9' | tr '_' '-')
           INPUT_DEPLOYMENT="${{ inputs.deployment }}"
           DEPLOYMENT_NAME="${INPUT_DEPLOYMENT:-$DEFAULT_DEPLOYMENT}"
           echo "DEPLOYMENT_NAME=$DEPLOYMENT_NAME" >> $GITHUB_ENV
