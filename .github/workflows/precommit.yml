@@ -90,10 +90,28 @@ jobs:
 
   cleanup:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    permissions:
+      actions: read
     steps:
-      - name: Remove Restart Flag
-        continue-on-error: true
-        run: gh run delete-artifact restart-flag
+      - name: Find Previous Run ID
+        id: find_run
+        run: |
+          # Get the ID of the previous run
+          PREVIOUS_RUN_ID=$(gh run list --workflow "${{ github.workflow_ref }}" --branch "${{ github.ref_name }}" --limit 2 --json databaseId \
+            | jq -r '.[1].databaseId // empty')
+
+          if [[ -z "$PREVIOUS_RUN_ID" ]]; then
+            echo "previous_run_id=" >> $GITHUB_OUTPUT
+          else
+            echo "previous_run_id=$PREVIOUS_RUN_ID" >> $GITHUB_OUTPUT
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cleanup Restart Flag
+        if: steps.find_run.outputs.previous_run_id != ''
+        uses: actions/delete-artifact@v4
+        continue-on-error: true
+        with:
+          name: restart-flag
+          run-id: ${{ steps.find_run.outputs.previous_run_id }}
