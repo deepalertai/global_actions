@@ -97,7 +97,7 @@ jobs:
         id: find_run
         run: |
           # Get the ID of the previous run
-          PREVIOUS_RUN_ID=$(gh run list --workflow "${{ github.workflow_ref }}" --branch "${{ github.ref_name }}" --limit 2 --json databaseId \
+          PREVIOUS_RUN_ID=$(gh run list -R "${{ github.repository }}" --workflow "${{ github.workflow_ref }}" --branch "${{ github.ref_name }}" --limit 2 --json databaseId \
             | jq -r '.[1].databaseId // empty')
 
           if [[ -z "$PREVIOUS_RUN_ID" ]]; then
