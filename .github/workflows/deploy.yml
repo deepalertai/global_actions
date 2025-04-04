@@ -3,6 +3,8 @@ on:
     inputs:
       namespace_prefix:
         type: string
+      namespace_postfix:
+        type: string
       deployment:
         type: string
     secrets:
@@ -31,7 +33,9 @@ jobs:
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
 
           # rename dev to staging
-          if [[ "${{ github.ref_name }}" == "dev" ]]; then
+          if [[ "${{ inputs.namespace_postfix }}" ]]; then
+            echo "DEPLOY_ENV=${{ inputs.namespace_postfix }}" >> $GITHUB_ENV
+          elif [[ "${{ github.ref_name }}" == "dev" ]]; then
             echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
           else
             echo "DEPLOY_ENV=${{ github.ref_name }}" >> $GITHUB_ENV
