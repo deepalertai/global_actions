@@ -7,6 +7,10 @@ on:
         type: string
       deployment:
         type: string
+      controller:
+        type: string
+        default: "deployment"
+
     secrets:
       kube_token:
         required: true
@@ -58,4 +62,4 @@ jobs:
       - name: Restart Kubernetes deployment
         shell: bash
         run: |
-          kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }} -n ${{ env.PREFIX }}-${{ env.DEPLOY_ENV }}
+          kubectl rollout restart ${{ inputs.controller }}/${{ env.DEPLOYMENT_NAME }} -n ${{ env.PREFIX }}-${{ env.DEPLOY_ENV }}
