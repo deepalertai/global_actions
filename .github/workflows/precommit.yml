@@ -5,112 +5,44 @@ jobs:
   precommit:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
+        # some pre-commit hooks might need full history
+        with:
+          fetch-depth: 0
 
-      - name: Set up Python 3.10
+      - name: Set up
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
 
-      - name: Install pre-commit
-        shell: bash
-        run: |
-          pip install pre-commit -q --root-user-action=ignore
-          pre-commit autoupdate
+      - name: Install
+        run: pip install pre-commit -q --root-user-action=ignore
 
-      - name: Set up Git
-        shell: bash
+        # This step will fail if pre-commit exits non-zero for *any* reason
+      - name: Run Pre-Commit
         run: |
-          git config --global user.email "github-actions@deepalert.ai"
-          git config --global user.name "GitHub Actions"
+          success=false
+          for i in {1..5}; do
+            echo "Running pre-commit attempt $i..."
+            if pre-commit run --all-files --show-diff-on-failure; then
+              echo "Pre-commit checks passed"
+              success=true
+              break
+            else
+              exit_code=$?
+              echo "Attempt $i failed with exit code $exit_code."
+              if [ $i -lt 5 ]; then
+                sleep 5
+              fi
+            fi
+          done
 
-      - name: Run Pre-Commit Hooks
-        shell: bash
-        run: |
-          for i in {1..5}; do pre-commit run --all-files && break || echo "Attempt $i failed... retrying."; done
-
-      - name: Check for Changes
-        id: changes
-        shell: bash
-        run: |
-          git add -A .
-          if git diff --cached --quiet; then
-              echo "no_changes=true" >> "$GITHUB_OUTPUT"
-          else
-              echo "no_changes=false" >> "$GITHUB_OUTPUT"
+          if [ "$success" = false ]; then
+            echo "Pre-commit failed"
+            exit 1
           fi
-
-      - name: Commit Changes
-        if: steps.changes.outputs.no_changes == 'false'
+          echo "Pre-commit finished successfully."
         shell: bash
-        run: |
-          git commit -m "Someone didn't pre-commit - running formatting"
-          git push
-
-      - name: Check for Restart Flag
-        if: steps.changes.outputs.no_changes == 'false'
-        id: check-restart
-        run: |
-          if gh run download --name restart-flag 2>/dev/null; then
-            echo "Workflow has already restarted. Skipping restart."
-            exit 0
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Restart Workflow
-      #   if: steps.changes.outputs.no_changes == 'false'
-      #   uses: actions/github-script@v7
-      #   with:
-      #     script: |
-      #       github.rest.repos.createDispatchEvent({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         event_type: 'restart-trigger',
-      #       });
-
-      - name: Set Restart Flag
-        if: steps.changes.outputs.no_changes == 'false'
-        run: echo "restart-done" > restart-flag.txt
-
-      - name: Upload Restart Flag
-        if: steps.changes.outputs.no_changes == 'false'
-        uses: actions/upload-artifact@v4
-        with:
-          name: restart-flag
-          path: restart-flag.txt
-
-      - name: Exit
-        shell: bash
-        if: steps.changes.outputs.no_changes == 'false'
-        run: exit 1
-
-  cleanup:
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-    steps:
-      - name: Find Previous Run ID
-        id: find_run
-        run: |
-          # Get the ID of the previous run
-          PREVIOUS_RUN_ID=$(gh run list -R "${{ github.repository }}" --workflow "${{ github.workflow_ref }}" --branch "${{ github.ref_name }}" --limit 2 --json databaseId \
-            | jq -r '.[1].databaseId // empty')
-
-          if [[ -z "$PREVIOUS_RUN_ID" ]]; then
-            echo "previous_run_id=" >> $GITHUB_OUTPUT
-          else
-            echo "previous_run_id=$PREVIOUS_RUN_ID" >> $GITHUB_OUTPUT
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Cleanup Artifact
-        if: steps.list_artifacts.outputs.artifact_id != ''
-        run: |
-          gh api -X DELETE repos/${{ github.repository }}/actions/artifacts/${{ steps.list_artifacts.outputs.artifact_id }}
-        env:
-          GH_TOKEN: ${{ github.token }}
