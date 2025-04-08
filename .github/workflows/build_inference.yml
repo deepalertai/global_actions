@@ -1,3 +1,5 @@
+# runs on ubuntu-latest-m for larger inference builds
+
 on:
   workflow_call:
     inputs:
@@ -11,8 +13,8 @@ on:
         required: false
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-inference:
+    runs-on: ubuntu-latest-m
     permissions:
       contents: write
       id-token: write
