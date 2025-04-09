@@ -21,6 +21,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Pull LFS files
+        run: |
+          git lfs install
+          git lfs pull
+
       - name: Get registry
         run: |
           echo "REGISTRY=${{ vars.REGION }}-docker.pkg.dev/${{ inputs.project_id }}/${{ github.ref_name }}" >> $GITHUB_ENV
