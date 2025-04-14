@@ -24,46 +24,42 @@ jobs:
         contents: write
 
     steps:
-      - name: Skip deploy
-        run: exit 0
+      - name: Configure env variables
+        shell: bash
+        run: |
+          # use formatted repo name or provided deployment name
+          DEFAULT_DEPLOYMENT=$(basename "${{ github.event.repository.name }}" | tr -d '0-9' | tr '_' '-')
+          INPUT_DEPLOYMENT="${{ inputs.deployment }}"
+          DEPLOYMENT_NAME="${INPUT_DEPLOYMENT:-$DEFAULT_DEPLOYMENT}"
+          echo "DEPLOYMENT_NAME=$DEPLOYMENT_NAME" >> $GITHUB_ENV
 
+          PREFIX=${{ inputs.namespace_prefix || 'deepalert' }}
+          echo "PREFIX=$PREFIX" >> $GITHUB_ENV
 
-      # - name: Configure env variables
-      #   shell: bash
-      #   run: |
-      #     # use formatted repo name or provided deployment name
-      #     DEFAULT_DEPLOYMENT=$(basename "${{ github.event.repository.name }}" | tr -d '0-9' | tr '_' '-')
-      #     INPUT_DEPLOYMENT="${{ inputs.deployment }}"
-      #     DEPLOYMENT_NAME="${INPUT_DEPLOYMENT:-$DEFAULT_DEPLOYMENT}"
-      #     echo "DEPLOYMENT_NAME=$DEPLOYMENT_NAME" >> $GITHUB_ENV
+          # rename dev to staging
+          if [[ "${{ inputs.namespace_postfix }}" ]]; then
+            echo "DEPLOY_ENV=${{ inputs.namespace_postfix }}" >> $GITHUB_ENV
+          elif [[ "${{ github.ref_name }}" == "dev" ]]; then
+            echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
+          else
+            echo "DEPLOY_ENV=${{ github.ref_name }}" >> $GITHUB_ENV
+          fi
 
-      #     PREFIX=${{ inputs.namespace_prefix || 'deepalert' }}
-      #     echo "PREFIX=$PREFIX" >> $GITHUB_ENV
+      - name: Configure kubectl authentication
+        shell: bash
+        run: |
+          kubectl config set-cluster github-actions \
+            --server=${{ secrets.kube_server }} \
+            --insecure-skip-tls-verify=true
+          kubectl config set-credentials github-actions \
+            --token=${{ secrets.kube_token }}
+          kubectl config set-context github-actions \
+            --cluster=github-actions \
+            --user=github-actions \
 
-      #     # rename dev to staging
-      #     if [[ "${{ inputs.namespace_postfix }}" ]]; then
-      #       echo "DEPLOY_ENV=${{ inputs.namespace_postfix }}" >> $GITHUB_ENV
-      #     elif [[ "${{ github.ref_name }}" == "dev" ]]; then
-      #       echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
-      #     else
-      #       echo "DEPLOY_ENV=${{ github.ref_name }}" >> $GITHUB_ENV
-      #     fi
+          kubectl config use-context github-actions
 
-      # - name: Configure kubectl authentication
-      #   shell: bash
-      #   run: |
-      #     kubectl config set-cluster github-actions \
-      #       --server=${{ secrets.kube_server }} \
-      #       --insecure-skip-tls-verify=true
-      #     kubectl config set-credentials github-actions \
-      #       --token=${{ secrets.kube_token }}
-      #     kubectl config set-context github-actions \
-      #       --cluster=github-actions \
-      #       --user=github-actions \
-
-      #     kubectl config use-context github-actions
-
-      # - name: Restart Kubernetes deployment
-      #   shell: bash
-      #   run: |
-      #     kubectl rollout restart ${{ inputs.controller }}/${{ env.DEPLOYMENT_NAME }} -n ${{ env.PREFIX }}-${{ env.DEPLOY_ENV }}
+      - name: Restart Kubernetes deployment
+        shell: bash
+        run: |
+          kubectl rollout restart ${{ inputs.controller }}/${{ env.DEPLOYMENT_NAME }} -n ${{ env.PREFIX }}-${{ env.DEPLOY_ENV }}
