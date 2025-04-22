@@ -19,6 +19,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
+      
       - name: Get registry
         run: |
           echo "REGISTRY=${{ vars.REGION }}-docker.pkg.dev/${{ inputs.project_id }}/${{ github.ref_name }}" >> $GITHUB_ENV
