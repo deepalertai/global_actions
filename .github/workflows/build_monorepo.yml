@@ -7,6 +7,8 @@ on:
     secrets:
       gcp_provider:
         required: true
+      da_pat:
+        required: true
       args:
         required: false
 
@@ -19,6 +21,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.da_pat }}
       
       - name: Get registry
         run: |
