@@ -24,6 +24,7 @@ jobs:
         with:
           submodules: true
           token: ${{ secrets.da_pat }}
+          ref: ${{ github.ref_name }}
       
       - name: Get registry
         run: |
