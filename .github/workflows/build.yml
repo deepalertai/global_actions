@@ -8,6 +8,9 @@ on:
         required: false
         type: string
         default: '.infra/Dockerfile'
+      name:
+        required: false
+        type: string
     secrets:
       gcp_provider:
         required: true
@@ -23,9 +26,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Get registry
+
+      - name: Set env
         run: |
+          echo "NAME=${{ inputs.name || github.event.repository.name }}" >> $GITHUB_ENV
           echo "REGISTRY=${{ vars.REGION }}-docker.pkg.dev/${{ inputs.project_id }}/${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Authenticate GCP
@@ -34,17 +38,16 @@ jobs:
           workload_identity_provider: '${{ secrets.gcp_provider }}'
           project_id: '${{ inputs.project_id}}'
 
-      - name: Configure Docker Authentication
-        run: gcloud auth configure-docker ${{ vars.REGION }}-docker.pkg.dev
+      - run: gcloud auth configure-docker ${{ vars.REGION }}-docker.pkg.dev
 
       - name: Build Docker Image
         shell: bash
         run: |
-          docker build --network=host --pull -t "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" -f ${{ inputs.dockerfile }} --build-arg BRANCH="${{ github.ref_name }}" --build-arg REGISTRY="${{ env.REGISTRY }}" ${{ secrets.args }} .
-          docker tag "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.ref_name }}"
+          docker build --network=host --pull -t "${{ env.REGISTRY }}/${{ env.NAME }}:${{ github.sha }}" -f ${{ inputs.dockerfile }} --build-arg BRANCH="${{ github.ref_name }}" --build-arg REGISTRY="${{ env.REGISTRY }}" ${{ secrets.args }} .
+          docker tag "${{ env.REGISTRY }}/${{ env.NAME }}:${{ github.sha }}" "${{ env.REGISTRY }}/${{ env.NAME }}:${{ github.ref_name }}"
 
       - name: Push Docker Image
         shell: bash
         run: |
-          docker push "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}"
-          docker push "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.ref_name }}"
+          docker push "${{ env.REGISTRY }}/${{ env.NAME }}:${{ github.sha }}"
+          docker push "${{ env.REGISTRY }}/${{ env.NAME }}:${{ github.ref_name }}"
