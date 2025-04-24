@@ -4,6 +4,10 @@ on:
       project_id:
         required: true
         type: string
+      dockerfile:
+        required: false
+        type: string
+        default: '.infra/Dockerfile'
     secrets:
       gcp_provider:
         required: true
@@ -36,7 +40,7 @@ jobs:
       - name: Build Docker Image
         shell: bash
         run: |
-          docker build --network=host --pull -t "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" -f .infra/Dockerfile --build-arg BRANCH="${{ github.ref_name }}" --build-arg REGISTRY="${{ env.REGISTRY }}" ${{ secrets.args }} .
+          docker build --network=host --pull -t "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" -f ${{ inputs.dockerfile }} --build-arg BRANCH="${{ github.ref_name }}" --build-arg REGISTRY="${{ env.REGISTRY }}" ${{ secrets.args }} .
           docker tag "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.sha }}" "${{ env.REGISTRY }}/${{ github.event.repository.name }}:${{ github.ref_name }}"
 
       - name: Push Docker Image
