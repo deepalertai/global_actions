@@ -1,3 +1,5 @@
+# runs on ubuntu-latest-m for larger inference builds
+
 on:
   workflow_call:
     inputs:
@@ -7,25 +9,25 @@ on:
     secrets:
       gcp_provider:
         required: true
-      da_pat:
-        required: true
       args:
         required: false
 
 jobs:
-  build:
+  build-inference:
+    # use normal runner
     runs-on: ubuntu-latest
     permissions:
       contents: write
       id-token: write
 
     steps:
+      # checkout with lfs
       - uses: actions/checkout@v4
-        with:
-          submodules: true
-          token: ${{ secrets.da_pat }}
-          ref: ${{ github.ref_name }}
-      
+      - name: Pull LFS files
+        run: |
+          git lfs install
+          git lfs pull
+
       - name: Get registry
         run: |
           echo "REGISTRY=${{ vars.REGION }}-docker.pkg.dev/${{ inputs.project_id }}/${{ github.ref_name }}" >> $GITHUB_ENV
