@@ -31,7 +31,11 @@ jobs:
         run: |
           echo "NAME=${{ inputs.name || github.event.repository.name }}" >> $GITHUB_ENV
           
-          SANITIZED_NAME=$(echo "$NAME" | sed -e 's/[^a-zA-Z0-9._-]/-/g' | sed -e 's/^-*//' -e 's/-*$//' | tr '[:upper:]' '[:lower:]')
+          RAW_NAME="${{ github.event.repository.name }}"
+          echo "Raw Name: $RAW_NAME"
+          echo "NAME=$RAW_NAME" >> $GITHUB_ENV
+
+          SANITIZED_NAME=$(echo "${RAW_NAME}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9._-]+/-/g' | sed -E 's/^-+|-+$//g')
           echo "Sanitized Name: $SANITIZED_NAME"
 
           echo "REGISTRY=${{ vars.REGION }}-docker.pkg.dev/${{ inputs.project_id }}/${{ github.ref_name }}" >> $GITHUB_ENV
