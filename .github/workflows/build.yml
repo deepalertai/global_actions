@@ -27,16 +27,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # sanitise repo name for docker image, or use provided input name
       - name: Set env
-        run: |
-          echo "NAME=${{ inputs.name || github.event.repository.name }}" >> $GITHUB_ENV
-          
-          RAW_NAME="${{ github.event.repository.name }}"
-          echo "Raw Name: $RAW_NAME"
-          echo "NAME=$RAW_NAME" >> $GITHUB_ENV
+        run: |        
+          IMAGE_NAME="" 
+          INPUT_NAME="${{ inputs.name }}"
 
-          SANITIZED_NAME=$(echo "${RAW_NAME}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9._-]+/-/g' | sed -E 's/^-+|-+$//g')
-          echo "Sanitized Name: $SANITIZED_NAME"
+          if [ -n "$INPUT_NAME" ]; then
+            IMAGE_NAME="$INPUT_NAME"
+          else
+            RAW_NAME="${{ github.event.repository.name }}"
+            SANITIZED_NAME=$(echo "${RAW_NAME}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9._-]+/-/g' | sed -E 's/^-+|-+$//g')
+            IMAGE_NAME="$SANITIZED_NAME"
+          fi
+          echo "NAME=${IMAGE_NAME}" >> $GITHUB_ENV
 
           echo "REGISTRY=${{ vars.REGION }}-docker.pkg.dev/${{ inputs.project_id }}/${{ github.ref_name }}" >> $GITHUB_ENV
 
