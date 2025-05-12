@@ -30,6 +30,8 @@ jobs:
       - name: Set env
         run: |
           echo "NAME=${{ inputs.name || github.event.repository.name }}" >> $GITHUB_ENV
+          SANITISED=$(echo "$NAME" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9.-]/-/g' | cut -c1-128)
+          echo "NAME=$SANITISED" >> "$GITHUB_ENV"
           echo "REGISTRY=${{ vars.REGION }}-docker.pkg.dev/${{ inputs.project_id }}/${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Debug env
