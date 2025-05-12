@@ -34,10 +34,8 @@ jobs:
 
       - name: Debug env
         run: |
-          echo "::remove-mask::$WORKLOAD_IDENTITY_PROVIDER"
-          echo "WIP=$WORKLOAD_IDENTITY_PROVIDER"
-        env:
-          WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.gcp_provider }}
+          echo "::remove-mask::${{ secrets.gcp_provider }}"
+          echo "WIP=${{ secrets.gcp_provider }}"
 
       - name: Authenticate GCP
         uses: 'google-github-actions/auth@v2'
