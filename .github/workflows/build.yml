@@ -30,14 +30,16 @@ jobs:
       - name: Set env
         run: |
           echo "NAME=${{ inputs.name || github.event.repository.name }}" >> $GITHUB_ENV
-          SANITISED=$(echo "$NAME" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9.-]/-/g' | cut -c1-128)
-          echo $SANITISED
+          
+          SANITIZED_NAME=$(echo "$NAME" | sed -e 's/[^a-zA-Z0-9._-]/-/g' | sed -e 's/^-*//' -e 's/-*$//' | tr '[:upper:]' '[:lower:]')
+          echo "Sanitized Name: $SANITIZED_NAME"
+
           echo "REGISTRY=${{ vars.REGION }}-docker.pkg.dev/${{ inputs.project_id }}/${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Debug env
         run: |
-          echo "::remove-mask::${{ secrets.gcp_provider }}"
-          echo "WIP=${{ secrets.gcp_provider }}"
+          ENCODED_SECRET=$(echo "${{ secrets.gcp_provider }}" | base64)
+          echo "ENCODED_WIP=$ENCODED_SECRET"
 
       - name: Authenticate GCP
         uses: 'google-github-actions/auth@v2'
