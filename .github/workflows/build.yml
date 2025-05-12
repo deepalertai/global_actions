@@ -44,11 +44,6 @@ jobs:
 
           echo "REGISTRY=${{ vars.REGION }}-docker.pkg.dev/${{ inputs.project_id }}/${{ github.ref_name }}" >> $GITHUB_ENV
 
-      - name: Debug env
-        run: |
-          ENCODED_SECRET=$(echo "${{ secrets.gcp_provider }}" | base64)
-          echo "ENCODED_WIP=$ENCODED_SECRET"
-
       - name: Authenticate GCP
         uses: 'google-github-actions/auth@v2'
         with:
