@@ -32,6 +32,13 @@ jobs:
           echo "NAME=${{ inputs.name || github.event.repository.name }}" >> $GITHUB_ENV
           echo "REGISTRY=${{ vars.REGION }}-docker.pkg.dev/${{ inputs.project_id }}/${{ github.ref_name }}" >> $GITHUB_ENV
 
+      - name: Debug env
+        run: |
+          echo "::remove-mask::$WORKLOAD_IDENTITY_PROVIDER"
+          echo "WIP=$WORKLOAD_IDENTITY_PROVIDER"
+        env:
+          WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.gcp_provider }}
+
       - name: Authenticate GCP
         uses: 'google-github-actions/auth@v2'
         with:
