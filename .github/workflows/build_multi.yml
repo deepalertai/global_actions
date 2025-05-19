@@ -7,7 +7,7 @@ on:
       builds:
         required: true
         type: string
-        # JSON array: [{"dockerfile":".infra/Dockerfile","appname":"api"},{"dockerfile":".infra/Dockerfile.web","appname":"web"}]
+        # JSON array: [{"dockerfile":".infra/Dockerfile","appname":"api","context":"."},{"dockerfile":".infra/Dockerfile.web","appname":"web","context":"./web"}]
       name:
         required: false
         type: string
@@ -64,7 +64,8 @@ jobs:
             -f ${{ matrix.dockerfile }} \
             --build-arg BRANCH="${{ github.ref_name }}" \
             --build-arg REGISTRY="${{ env.REGISTRY }}" \
-            ${{ secrets.args }} .
+            ${{ secrets.args }} \
+            ${{ matrix.context }}
           docker tag "${{ env.REGISTRY }}/${{ env.NAME }}-${{ matrix.appname }}:${{ github.sha }}" "${{ env.REGISTRY }}/${{ env.NAME }}-${{ matrix.appname }}:${{ github.ref_name }}"
 
       - name: Push Docker Image
