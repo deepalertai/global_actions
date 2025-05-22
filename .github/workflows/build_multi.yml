@@ -73,4 +73,10 @@ jobs:
         run: |
           docker push "${{ env.REGISTRY }}/${{ env.NAME }}-${{ matrix.appname }}:${{ github.sha }}"
           docker push "${{ env.REGISTRY }}/${{ env.NAME }}-${{ matrix.appname }}:${{ github.ref_name }}"
-          echo "### Image tag: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Image tag"
+            echo ""
+            echo '```'
+            echo "${{ github.sha }}"
+            echo '```'
+          } >> $GITHUB_STEP_SUMMARY
