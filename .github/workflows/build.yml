@@ -63,4 +63,4 @@ jobs:
         run: |
           docker push "${{ env.REGISTRY }}/${{ env.NAME }}:${{ github.sha }}"
           docker push "${{ env.REGISTRY }}/${{ env.NAME }}:${{ github.ref_name }}"
-          echo "### Build tag: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "### Image tag: `${{ github.sha }}`" >> $GITHUB_STEP_SUMMARY
