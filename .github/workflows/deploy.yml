@@ -47,20 +47,6 @@ jobs:
             echo "DEPLOY_ENV=${{ github.ref_name }}" >> $GITHUB_ENV
           fi
 
-      - name: Configure kubectl authentication
-        shell: bash
-        run: |
-          kubectl config set-cluster github-actions \
-            --server=${{ secrets.kube_server }} \
-            --insecure-skip-tls-verify=true
-          kubectl config set-credentials github-actions \
-            --token=${{ secrets.kube_token }}
-          kubectl config set-context github-actions \
-            --cluster=github-actions \
-            --user=github-actions \
-
-          kubectl config use-context github-actions
-
       - name: Restart deployment
         if: ${{ inputs.deployments == '' && env.DEPLOYMENT_NAME != '' }}
         shell: bash
@@ -71,6 +57,7 @@ jobs:
         if: ${{ inputs.deployments != '' }}
         shell: bash
         run: |
-          for deployment in $(echo '${{ inputs.deployments }}' | jq -r '.[]'); do
-            kubectl rollout restart ${{ inputs.controller }}/${deployment} -n ${{ env.PREFIX }}-${{ env.DEPLOY_ENV }}
+          echo ${inputs.deployments}
+          for deployment in $(echo "${{ inputs.deployments }}" | jq -r '.[]'); do
+            echo ${deployment}
           done
