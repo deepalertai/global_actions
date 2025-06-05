@@ -7,6 +7,8 @@ on:
         type: string
       deployment:
         type: string
+      deployments:
+        type: string
       controller:
         type: string
         default: "deployment"
@@ -59,7 +61,16 @@ jobs:
 
           kubectl config use-context github-actions
 
-      - name: Restart Kubernetes deployment
+      - name: Restart deployment
+        if: ${{ inputs.deployments == '' && env.DEPLOYMENT_NAME != '' }}
         shell: bash
         run: |
           kubectl rollout restart ${{ inputs.controller }}/${{ env.DEPLOYMENT_NAME }} -n ${{ env.PREFIX }}-${{ env.DEPLOY_ENV }}
+
+      - name: Restart deployments
+        if: ${{ inputs.deployments != '' }}
+        shell: bash
+        run: |
+          for deployment in $(echo '${{ inputs.deployments }}' | jq -r '.[]'); do
+            kubectl rollout restart ${{ inputs.controller }}/${deployment} -n ${{ env.PREFIX }}-${{ env.DEPLOY_ENV }}
+          done
