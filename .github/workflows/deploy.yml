@@ -51,7 +51,7 @@ jobs:
         if: ${{ inputs.deployments == '' && env.DEPLOYMENT_NAME != '' }}
         shell: bash
         run: |
-          kubectl rollout restart ${{ inputs.controller }}/${{ env.DEPLOYMENT_NAME }} -n ${{ env.PREFIX }}-${{ env.DEPLOY_ENV }}
+           echo ${env.DEPLOYMENT_NAME }
 
       - name: Restart deployments
         if: ${{ inputs.deployments != '' }}
