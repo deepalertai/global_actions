@@ -57,7 +57,7 @@ jobs:
         if: ${{ inputs.deployments != '' }}
         shell: bash
         run: |
-          echo "${{ inputs.deployments }}"
-          for deployment in $(echo "${{ inputs.deployments }}" | jq -r '.[]'); do
-            echo "$deployment"
+          echo "Input to jq will be: '${{ inputs.deployments }}'"
+          for deployment in $(echo '${{ inputs.deployments }}' | jq -r '.[]'); do
+            echo "Processing deployment: $deployment"
           done
